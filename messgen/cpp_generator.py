@@ -349,16 +349,21 @@ class CppGenerator:
 
         message_id_const = "static constexpr %s TYPE = %d;" % \
                            (MESSAGE_ID_C_TYPE, message_obj["id"])
+
         message_size_const = "static constexpr %s STATIC_SIZE = %d; " \
                              "/*<! Plain fields size + dynamic fields length */" % \
                              (MESSAGE_SIZE_C_TYPE, msg_static_size)
+
         message_proto_id_const = "static constexpr %s PROTO = PROTO_ID;" % MESSAGE_PROTO_C_TYPE
+
+        message_has_dynamics = "static constexpr bool HAS_DYNAMICS = %s;" % str(data_type["has_dynamics"]).lower()
 
         self.start_block("struct " + message_obj["name"])
         self.extend([
             message_id_const,
             message_size_const,
             message_proto_id_const,
+            message_has_dynamics,
             ""
         ])
 
@@ -555,8 +560,6 @@ class CppGenerator:
 
         # Process dynamic fields
         for field in message["fields"][current_field_pos:]:
-            typeinfo = self._data_types_map[field["type"]]
-
             if field["type"] == "string":
                 if field["is_array"]:
                     raise MessgenException("Array of strings is not supported in C++ generator")
@@ -581,7 +584,7 @@ class CppGenerator:
         self.start_block("int parse_msg(const uint8_t *%s, uint32_t len, messgen::MemoryAllocator & %s)" %
                          (INPUT_BUF_NAME, INPUT_ALLOC_NAME))
 
-        if message["dynamic_fields_cnt"] == 0:
+        if not message["has_dynamics"]:
             self.append(ignore_variable(INPUT_ALLOC_NAME))
 
         if len(message["fields"]) == 0:

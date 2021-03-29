@@ -16,7 +16,8 @@ class DataTypesPreprocessor:
             self._types_map[k] = {
                 "align": v["align"],
                 "static_size": v["size"],
-                "plain": True
+                "plain": True,
+                "has_dynamics": False
             }
 
         # TODO make aliases in correct way
@@ -24,7 +25,8 @@ class DataTypesPreprocessor:
             self._types_map[k] = {
                 "align": v["align"],
                 "static_size": v["size"],
-                "plain": True
+                "plain": True,
+                "has_dynamics": False
             }
 
     def create_types_map(self, modules_map):
@@ -120,7 +122,7 @@ class DataTypesPreprocessor:
     def __load_data_type(self, module_name, typename, data_type):
         data_type["deps"] = []
         data_type["typename"] = typename
-        data_type["dynamic_fields_cnt"] = 0
+        data_type["has_dynamics"] = False
 
         if data_type.get("fields") is None:
             data_type["fields"] = []
@@ -129,7 +131,6 @@ class DataTypesPreprocessor:
 
         alignment = 0
         static_size = 0
-        full_size = 0
 
         for field in fields:
             child_norm_typename = self.__normalize_typename(module_name, field["type"])
@@ -146,7 +147,7 @@ class DataTypesPreprocessor:
             field["type"] = child_norm_typename
 
             if field["is_dynamic"]:
-                data_type["dynamic_fields_cnt"] += 1
+                data_type["has_dynamics"] = True
 
             if child_norm_typename not in self._types_map:
                 if child_norm_typename not in self._lookup_table:
@@ -157,6 +158,9 @@ class DataTypesPreprocessor:
                 self.__load_data_type(child_module_name, child_norm_typename, child_datatype)
 
             child_datatype_entry = self._types_map[child_norm_typename]
+
+            if child_datatype_entry["has_dynamics"]:
+                data_type["has_dynamics"] = True
 
             children_number = 0
             if not child_datatype_entry["plain"]:
@@ -190,7 +194,7 @@ class DataTypesPreprocessor:
             "deps": data_type["deps"],
             "align": alignment,
             "static_size": static_size,
-            "dynamic_fields_cnt": data_type["dynamic_fields_cnt"],
+            "has_dynamics": data_type["has_dynamics"],
             "plain": False
         }
 
