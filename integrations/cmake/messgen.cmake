@@ -87,6 +87,8 @@ FUNCTION(MESSGEN_GENERATE_MESSAGES BASEDIRS MODULES OUTDIR)
                 ${MODULES}
                 "-o"
                 ${OUTDIR}
+                "-D"
+                "metadata_json=true"
                 "-l"
                 "cpp"
                 DEPENDS
