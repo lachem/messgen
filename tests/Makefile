@@ -2,8 +2,8 @@ PWD := $(shell pwd)
 MESSAGES_YAML := ${wildcard messages/messgen/messgen_test/*.yaml}
 
 CPP := g++
-CPPFLAGS = -Wall -std=c++17 -O0 -g -c -I${PWD}/cpp -I${PWD}/../port/cpp
-LDFLAGS = -pthread -lgtest
+CPPFLAGS = -Wall -std=c++17 -O0 -g -c -I${PWD}/cpp -I${PWD}/../port/cpp -I/home/yuri-gorshkov/.conan/data/gtest/1.10.0/_/_/package/319986a8ddc0fc392032c63f81cacfe9edd93e70/include
+LDFLAGS = -L/home/yuri-gorshkov/.conan/data/gtest/1.10.0/_/_/package/319986a8ddc0fc392032c63f81cacfe9edd93e70/lib -pthread -lgtest
 
 CPP_HEADERS := ${wildcard cpp/*.h} ${wildcard cpp/super/duper/project/*.h} ${wildcard cpp/messgen/msgs/messgen_test/*.h}
 CPP_SOURCES := ${wildcard cpp/*.cpp} ${wildcard cpp/super/duper/project/*.cpp} ${wildcard cpp/messgen/msgs/messgen_test/*.cpp}
