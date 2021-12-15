@@ -387,7 +387,7 @@ class CppGenerator:
         self.generate_get_dynamic_size_method(message_obj)
         self.append("")
 
-        self.append("static const messgen::Metadata METADATA;")
+        self.append("static const ::messgen::Metadata METADATA;")
         self.append("")
 
         self.stop_block(";")
@@ -466,7 +466,7 @@ class CppGenerator:
                     self.stop_cycle()
 
             elif not typeinfo["plain"]:
-                self.append(set_inc_var("size", "messgen::Serializer<decltype(%s)>::get_dynamic_size(%s)" % (
+                self.append(set_inc_var("size", "::messgen::Serializer<decltype(%s)>::get_dynamic_size(%s)" % (
                     field["name"], field["name"])))
 
             elif field["type"] == "string":
@@ -556,7 +556,7 @@ class CppGenerator:
             if field["is_array"]:
                 self.__serialize_struct_array(field["name"], field["num"])
             else:
-                serialize_call = "messgen::Serializer<decltype(%s)>::serialize(%s, %s)" % (
+                serialize_call = "::messgen::Serializer<decltype(%s)>::serialize(%s, %s)" % (
                     field["name"], "ptr", field["name"])
                 self.append(set_inc_var("ptr", serialize_call))
 
@@ -585,7 +585,7 @@ class CppGenerator:
         return list(self._code)
 
     def generate_parse_method(self, message):
-        self.start_block("int parse_msg(const uint8_t *%s, uint32_t len, messgen::MemoryAllocator & %s)" %
+        self.start_block("int parse_msg(const uint8_t *%s, uint32_t len, ::messgen::MemoryAllocator & %s)" %
                          (INPUT_BUF_NAME, INPUT_ALLOC_NAME))
 
         if not message["has_dynamics"]:
@@ -627,7 +627,7 @@ class CppGenerator:
             if field["is_array"]:
                 self.__parse_struct_array(field["name"], field["num"])
             else:
-                parse_call = "parse_result = messgen::Parser<decltype(%s)>::parse(%s, len, %s, %s);" % (
+                parse_call = "parse_result = ::messgen::Parser<decltype(%s)>::parse(%s, len, %s, %s);" % (
                     field["name"], "ptr", INPUT_ALLOC_NAME, field["name"])
                 self.extend([
                     parse_call,
@@ -700,7 +700,7 @@ class CppGenerator:
             else:
                 c_type = to_cpp_type(field["type"])
                 if field["is_dynamic"]:
-                    var = make_variable(field["name"], "messgen::Dynamic<" + c_type + ">", field["num"])
+                    var = make_variable(field["name"], "::messgen::Dynamic<" + c_type + ">", field["num"])
                 else:
                     var = make_variable(field["name"], c_type, field["num"])
 
@@ -740,8 +740,8 @@ class CppGenerator:
                 nested_structs_metadata += "&" + to_cpp_type(field["type"]) + "::METADATA, "
         nested_structs_metadata += "nullptr}"
 
-        self.append("static const messgen::Metadata *nested_msgs[] = %s;" % nested_structs_metadata)
-        self.start_block("const messgen::Metadata %s::METADATA = " % message_obj["name"])
+        self.append("static const ::messgen::Metadata *nested_msgs[] = %s;" % nested_structs_metadata)
+        self.start_block("const ::messgen::Metadata %s::METADATA = " % message_obj["name"])
         self.extend([
             "\"%s\"," % message_obj["name"],
             fields_description + ",",
