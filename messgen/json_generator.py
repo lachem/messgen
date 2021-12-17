@@ -9,8 +9,11 @@ def format_type_name(module_path, typename):
     t = json_types_map.get(typename, typename)
     le = t.rfind('/')
 
-    if le > 0 and module_path == t[:le]:
-        f_type = t[le+1:]
+    if le > 0:
+        if module_path == t[:le]:
+            f_type = t[le+1:]
+        else:
+            f_type = t
     else:
         f_type = t[0].upper() + t[1:]
 
