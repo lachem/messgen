@@ -49,7 +49,8 @@ class DataTypesPreprocessor:
                     "name": field name,
                     "type": normalized typename,
                     "dynamic": indicates whether this is a dynamic array,
-                    "num": number of items. If > 1 -> fixed size array
+                    "num": number of items. If > 1 -> fixed size array,
+                    "index": field index as defined in source yaml (used to order constructor args)
                 }, ...] - list of fields sorted by alignment
             }
         }
@@ -137,10 +138,13 @@ class DataTypesPreprocessor:
 
         alignment = 0
         static_size = 0
-
+        index = 0
         for field in fields:
             child_norm_typename = self.__normalize_typename(module_name, field["type"])
             child_module_name = get_module_name(child_norm_typename)
+
+            field["index"] = index
+            index += 1
 
             field["is_array"] = is_array(field["type"])
             field["num"] = int(get_array_size(field["type"]))

@@ -61,7 +61,6 @@ def make_variable(name, var_type, array_size):
     var = var_type + " " + name
     if array_size > 0:
         var += "[" + str(array_size) + "]"
-    var += ";"
 
     return var
 
@@ -370,6 +369,9 @@ class CppGenerator:
 
         self.generate_data_fields(data_type["fields"])
         self.append("")
+
+        self.generate_default_ctor(message_obj["name"])
+        self.generate_ctor(data_type["fields"], message_obj["name"])
 
         cpp_typename = message_obj["typename"].replace("/", "::")
         self.generate_compare_operator(cpp_typename, data_type)
@@ -693,21 +695,76 @@ class CppGenerator:
         var += ";"
         return var
 
+    def generate_data_field(self, field):
+        if field["type"] == "string":
+            var = make_variable(field["name"], "std::string_view", 0)
+        else:
+            c_type = to_cpp_type(field["type"])
+            if field["is_dynamic"]:
+                var = make_variable(field["name"], "::messgen::Dynamic<" + c_type + ">", field["num"])
+            else:
+                var = make_variable(field["name"], c_type, field["num"])
+        return var
+
     def generate_data_fields(self, fields):
         for field in fields:
-            if field["type"] == "string":
-                var = make_variable(field["name"], "std::string_view", 0)
-            else:
-                c_type = to_cpp_type(field["type"])
-                if field["is_dynamic"]:
-                    var = make_variable(field["name"], "::messgen::Dynamic<" + c_type + ">", field["num"])
-                else:
-                    var = make_variable(field["name"], c_type, field["num"])
-
+            var = self.generate_data_field(field)
+            var += ";"
             if field.get("descr") is not None:
                 var += " // " + str(field["descr"])
 
             self.append(var)
+
+    def generate_default_ctor(self, name):
+        self.append(f'{name}() = default;\n')
+
+    def generate_ctor(self, fields, name):
+        if not fields:
+            return
+
+        def sort_fields_by_index(fields):
+            def _index_getter(field):
+                # "type" field is already normalized
+                return field["index"]
+
+            return list(
+                sorted(
+                    fields,
+                    key=_index_getter,
+                    reverse=False
+                )
+            )
+
+        type_list = "<"
+        arg_list = "(\n"
+        init_list = " :\n"
+        body = " {\n"
+        first_arg = True
+        for field in sort_fields_by_index(fields):
+            if first_arg:
+                first_arg = False
+            else:
+                arg_list += ",\n"
+                type_list += ", "
+            typename = field["name"].upper()
+            arg_list += f'        {typename} &&{field["name"]}'
+            type_list += f'typename {typename}'
+        arg_list += ")"
+        type_list += ">"
+
+        first_initializer = True
+        for field in fields:
+            if field["num"]:
+                body += f'        for (auto i = 0u; i < {field["num"]}; ++i) {{ this->{field["name"]}[i] = {field["name"]}[i]; }}\n'
+            else:
+                if first_initializer:
+                    first_initializer = False
+                else:
+                    init_list += ",\n"
+                init_list += f'            {field["name"]}{{{field["name"]}}}'
+        body += "    }\n"
+
+        self.append(f'template{type_list}\n    {name}{arg_list}{init_list}{body}')
 
     def generate_metadata_fields_legacy(self, message_obj):
         descr = ['"']
