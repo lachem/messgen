@@ -747,7 +747,7 @@ class CppGenerator:
                 arg_list += ",\n"
                 type_list += ", "
             typename = field["name"].upper()
-            arg_list += f'        {typename} &&{field["name"]}'
+            arg_list += f'        {typename}&& {field["name"]}'
             type_list += f'typename {typename}'
         arg_list += ")"
         type_list += ">"
@@ -761,7 +761,7 @@ class CppGenerator:
                     first_initializer = False
                 else:
                     init_list += ",\n"
-                init_list += f'            {field["name"]}{{{field["name"]}}}'
+                init_list += f'            {field["name"]}{{std::forward<{field["name"].upper()}>({field["name"]})}}'
         body += "    }\n"
 
         self.append(f'template{type_list}\n    {name}{arg_list}{init_list}{body}')
