@@ -79,6 +79,20 @@ struct Dynamic {
     T *ptr;
     uint32_t size;
 
+    Dynamic() = default;
+    Dynamic(const Dynamic& other) = default;
+    Dynamic(Dynamic&& other) = default;
+    Dynamic& operator=(const Dynamic& other) = default;
+    Dynamic& operator=(Dynamic&& other) = default;
+
+    Dynamic(T* data, uint32_t size) : ptr{data}, size{size} {}
+
+    template<template<typename> typename Container>
+    Dynamic(const Container<T>& entries) :
+        ptr{const_cast<T*>(std::data(entries))},
+        size{static_cast<std::uint32_t>(std::size(entries))} {
+    }
+
     bool operator==(const Dynamic<T> &other) const {
         if (size != other.size) {
             return false;

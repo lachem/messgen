@@ -169,7 +169,7 @@ protected:
 
     template<class T>
     messgen::Dynamic<T> make_dynamic(uint16_t size) {
-        return messgen::Dynamic<T>{new T[size], size};
+        return messgen::Dynamic<T>{new T[size], size}; // leaks here
     }
 
     template<class T,
