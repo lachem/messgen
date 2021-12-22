@@ -88,7 +88,7 @@ struct Dynamic {
     Dynamic(T* data, uint32_t size) : ptr{data}, size{size} {}
 
     template<template<typename> typename Container>
-    explicit Dynamic(Container<T>&& entries) :
+    explicit Dynamic(const Container<T>& entries) :
         ptr{const_cast<T*>(std::data(entries))},
         size{static_cast<std::uint32_t>(std::size(entries))} {
     }
