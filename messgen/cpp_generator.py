@@ -371,6 +371,11 @@ class CppGenerator:
         self.append("")
 
         self.generate_default_ctor(message_obj["name"])
+        self.generate_copy_ctor(message_obj["name"])
+        self.generate_move_ctor(message_obj["name"])
+        self.generate_copy_assign(message_obj["name"])
+        self.generate_move_assign(message_obj["name"])
+
         self.generate_ctor(data_type["fields"], message_obj["name"])
 
         cpp_typename = message_obj["typename"].replace("/", "::")
@@ -717,6 +722,18 @@ class CppGenerator:
 
     def generate_default_ctor(self, name):
         self.append(f'{name}() = default;\n')
+
+    def generate_copy_ctor(self, name):
+        self.append(f'{name}(const {name}& other) = default;\n')
+
+    def generate_move_ctor(self, name):
+        self.append(f'{name}({name}&& other) = default;\n')
+
+    def generate_copy_assign(self, name):
+        self.append(f'{name}& operator=(const {name}& other) = default;\n')
+
+    def generate_move_assign(self, name):
+        self.append(f'{name}& operator=({name}&& other) = default;\n')
 
     def generate_ctor(self, fields, name):
         if not fields:
