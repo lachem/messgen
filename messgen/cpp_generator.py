@@ -772,7 +772,7 @@ class CppGenerator:
         first_initializer = True
         for field in fields:
             if field["num"]:
-                body += f'        for (auto i = 0u; i < {field["num"]}; ++i) {{ this->{field["name"]}[i] = {field["name"]}[i]; }}\n'
+                body += f'        for (auto i = 0u; i < {field["num"]}; ++i) {{ this->{field["name"]}[i] = std::forward<{field["name"].upper()}>({field["name"]})[i]; }}\n'
             else:
                 if first_initializer:
                     first_initializer = False
